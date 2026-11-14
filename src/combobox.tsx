@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { matchesSearch } from "./arabic";
+import { getMessages } from "./messages";
 
 export interface UseComboboxOptions<T> {
   items: readonly T[];
@@ -19,13 +20,19 @@ export interface UseComboboxOptions<T> {
   onSelect?: (item: T) => void;
   /** Base id for the generated element ids. */
   id?: string;
+  /**
+   * Direction of the text field. "auto" lets the browser follow the first strong character, so English
+   * typed on an Arabic page runs left to right. It also moves the text away from the label side, so it
+   * is off by default; use it where people often type in both scripts.
+   */
+  inputDir?: "auto" | "ltr" | "rtl";
 }
 
 /**
  * Headless combobox following the WAI-ARIA 1.2 "editable combobox with list autocomplete" pattern.
  * Up/Down keys are direction-neutral, so it behaves the same in RTL and LTR layouts.
  */
-export function useCombobox<T>({ items, getLabel, filter, onSelect, id }: UseComboboxOptions<T>) {
+export function useCombobox<T>({ items, getLabel, filter, onSelect, id, inputDir }: UseComboboxOptions<T>) {
   const autoId = useId();
   const baseId = id ?? `cbx${autoId.replace(/:/g, "")}`;
   const listboxId = `${baseId}-listbox`;
@@ -100,6 +107,7 @@ export function useCombobox<T>({ items, getLabel, filter, onSelect, id }: UseCom
     id: `${baseId}-input`,
     role: "combobox",
     type: "text",
+    dir: inputDir ?? props.dir,
     autoComplete: "off",
     "aria-autocomplete": "list",
     "aria-expanded": open,
@@ -157,15 +165,18 @@ export function useCombobox<T>({ items, getLabel, filter, onSelect, id }: UseCom
 export interface ComboboxProps<T> extends UseComboboxOptions<T> {
   label: ReactNode;
   placeholder?: string;
-  /** Rendered when the query matches nothing. */
+  /** Rendered when the query matches nothing. Defaults to a translated "No results"; pass `null` to show nothing. */
   emptyMessage?: ReactNode;
+  /** Locale for built-in messages. Defaults to the page's `lang`. */
+  locale?: string;
   renderOption?: (item: T, state: { active: boolean }) => ReactNode;
   className?: string;
 }
 
 /** Unstyled reference component built on `useCombobox`. Style it with the `data-*` attributes and your own classes. */
-export function Combobox<T>({ label, placeholder, emptyMessage, renderOption, className, ...options }: ComboboxProps<T>) {
+export function Combobox<T>({ label, placeholder, emptyMessage, renderOption, className, locale, ...options }: ComboboxProps<T>) {
   const cbx = useCombobox(options);
+  const empty = emptyMessage === undefined ? getMessages(locale).noResults : emptyMessage;
   return (
     <div className={className} data-rtlp-combobox="">
       <label htmlFor={cbx.inputId}>{label}</label>
@@ -177,8 +188,8 @@ export function Combobox<T>({ label, placeholder, emptyMessage, renderOption, cl
           </li>
         ))}
       </ul>
-      {cbx.open && cbx.results.length === 0 && cbx.query !== "" && emptyMessage ? (
-        <div role="status">{emptyMessage}</div>
+      {cbx.open && cbx.results.length === 0 && cbx.query !== "" && empty ? (
+        <div role="status">{empty}</div>
       ) : null}
     </div>
   );

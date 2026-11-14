@@ -1,5 +1,6 @@
 import { useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useDirection, type Direction } from "./direction";
+import { getMessages, resolveLocale } from "./messages";
 
 /** A calendar day as an ISO date string, "YYYY-MM-DD" (Gregorian). */
 export type ISODate = string;
@@ -190,10 +191,11 @@ export interface CalendarProps extends Omit<UseCalendarOptions, "dir" | "locale"
 }
 
 /** Unstyled reference calendar built on `useCalendar`. */
-export function Calendar({ locale, dir, previousLabel = "Previous month", nextLabel = "Next month", className, ...options }: CalendarProps) {
+export function Calendar({ locale, dir, previousLabel, nextLabel, className, ...options }: CalendarProps) {
   const root = useRef<HTMLDivElement>(null);
   const direction = useDirection(root, dir);
-  const loc = locale ?? (typeof navigator !== "undefined" ? navigator.language : "en");
+  const loc = resolveLocale(locale);
+  const t = getMessages(loc);
   const c = useCalendar({ ...options, locale: loc, dir: direction });
   const headingId = `${useId().replace(/:/g, "")}-month`;
 
@@ -201,13 +203,13 @@ export function Calendar({ locale, dir, previousLabel = "Previous month", nextLa
     <div ref={root} className={className} data-rtlp-calendar="" dir={dir}>
       <div data-rtlp-calendar-header="">
         {/* Logical order: the "previous" button sits at the reading start in both directions. */}
-        <button type="button" aria-label={previousLabel} onClick={c.previousMonth}>
+        <button type="button" aria-label={previousLabel ?? t.previousMonth} onClick={c.previousMonth}>
           <span aria-hidden="true">{direction === "rtl" ? "→" : "←"}</span>
         </button>
         <h2 id={headingId} aria-live="polite">
           {c.monthLabel}
         </h2>
-        <button type="button" aria-label={nextLabel} onClick={c.nextMonth}>
+        <button type="button" aria-label={nextLabel ?? t.nextMonth} onClick={c.nextMonth}>
           <span aria-hidden="true">{direction === "rtl" ? "←" : "→"}</span>
         </button>
       </div>

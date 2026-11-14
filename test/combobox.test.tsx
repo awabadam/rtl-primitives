@@ -70,6 +70,11 @@ describe("Combobox", () => {
     expect(screen.getByRole("status")).toHaveTextContent("لا توجد نتائج");
   });
 
+  it("can let the field follow the typed script with inputDir=auto", () => {
+    render(<Combobox label="City" items={cities} getLabel={(c) => c} inputDir="auto" />);
+    expect(screen.getByRole("combobox")).toHaveAttribute("dir", "auto");
+  });
+
   it("has no axe violations, closed or open", async () => {
     const { container, input } = setup();
     expect(await axeViolations(container)).toEqual([]);

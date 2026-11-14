@@ -12,6 +12,17 @@ The demo page is one booking flow (treatment, date, time, budget, contact) built
 
 Most component libraries are built in English and adapted for RTL afterwards. These are built for both from the start. I wrote them after shipping a 9-language patient site with RTL Arabic and Farsi, where the same problems kept coming back.
 
+## Why this exists, and when to use React Aria instead
+
+[React Aria](https://react-aria.adobe.com) is the most complete library of accessible, internationalised React primitives: translations in over 30 languages, 13 calendar systems, and manual testing with NVDA, VoiceOver and TalkBack. **If you need breadth, use React Aria.**
+
+rtl-primitives covers a narrower slice in more depth: Arabic-first booking and contact flows. The first three items below have no React Aria component; the fourth is in both libraries, with a smaller API here:
+
+- **Search that understands Arabic spelling**, so a query matches across diacritics, hamza forms, ة/ه and ى/ي.
+- **Phone input in Arabic-Indic digits** that stays in typed order inside RTL text and is formatted as you type. [intl-tel-input](https://intl-tel-input.pages.dev/docs/localisation), for example, turns formatting off for these digits because the caret becomes unreliable.
+- **Booking slots across time zones** with daylight-saving gaps handled, for clinics whose patients book from abroad.
+- **A Hijri-ready calendar** whose values stay ISO Gregorian, with the week start taken from the locale.
+
 ## What's inside
 
 | Component | What it gets right |
@@ -21,9 +32,9 @@ Most component libraries are built in English and adapted for RTL afterwards. Th
 | [`TimeSlotPicker`](#timeslotpicker--useslotgrid) | Business time zone in, visitor time zone out, daylight-saving gaps skipped |
 | [`Slider`](#slider--useslider) | Track, pointer and arrow keys flip in RTL; value spoken in the reader's numerals and currency |
 | [`Tabs`](#tabs--usetabs) | Left/Right follow reading order; automatic or manual activation |
-| [`NumberField`, `PhoneField`](#numberfield-and-phonefield) | Accept Arabic-Indic and Persian digits; phone stays LTR in RTL text and is stored as E.164 |
+| [`NumberField`, `PhoneField`](#numberfield-and-phonefield) | Accept Arabic-Indic and Persian digits; phone formats as you type with a stable caret, stays in order in RTL text and is stored as E.164 |
 
-Every component ships as a headless hook (prop getters, no markup or CSS) and an unstyled reference component built on it.
+Every component ships as a headless hook (prop getters, no markup or CSS) and an unstyled reference component built on it. Built-in strings ("Next month", "No results", error messages) come in English, Arabic and Turkish, chosen from the `locale` prop or the page's `lang`, and every one can be overridden.
 
 ### `Combobox` / `useCombobox`
 
@@ -31,6 +42,7 @@ An editable combobox with list autocomplete, following the [WAI-ARIA 1.2 combobo
 
 - **Arabic-aware search.** Strips harakat and tatweel, treats the forms of alef (أ إ آ ٱ) as the same letter, matches ة with ه and ى with ي, and reads Arabic-Indic and Persian digits as Western digits. Typing "زراعه" finds "زِراعَة".
 - **Keyboard:** Up/Down to move, Enter to pick, Escape to close (a second Escape clears), Tab to leave. `aria-activedescendant` keeps focus in the input.
+- **`inputDir="auto"`** lets the field follow the typed script, so English typed on an Arabic page runs left to right. It's off by default because it moves the text away from the label side.
 
 ### `Calendar` / `useCalendar`
 
@@ -63,8 +75,9 @@ A grid of bookable times for a business in one time zone and a visitor in anothe
 ### `NumberField` and `PhoneField`
 
 - Both accept Western, Arabic-Indic (٠-٩) and Persian (۰-۹) digits, plus the Arabic decimal (٫) and thousands (٬) separators.
-- `NumberField` shows the value in the viewer's locale on blur, clamps it to `minValue`/`maxValue`, and announces invalid input.
-- `PhoneField` keeps "+" and every digit group in typed order inside RTL pages, and aligns to the page's start edge. `dir="ltr"` alone isn't enough here. Arabic-Indic digits are *Arabic Number* characters in the Unicode Bidi Algorithm, so the spaces between groups resolve right-to-left and "٠٥٥٤ ١٧٥ ٩٩" displays as "٩٩ ١٧٥ ٠٥٥٤". The field overrides the bidi algorithm (`phoneInputStyle`) to prevent that. It reports `{ e164, valid }` and adds `countryCode` to local numbers.
+- `NumberField` ignores keystrokes that can never form a number, as React Aria does. It parses its own currency and percent formats ("US$1500", "٪٥٠"), so a formatted value stays editable. It shows the value in the viewer's locale on blur, clamps to `minValue`/`maxValue`, and announces invalid input.
+- `PhoneField` **formats as you type in the digit system being used**: "٠٥٥٤ ١٧٥ ٩٩ ٤٥" or "0554 175 99 45". Grouping patterns cover common Middle East, North Africa and European calling codes. The caret is tracked by how many digits sit before it rather than by string position, so inserting group spaces never moves it, and Backspace over a space deletes the digit before it. Turn formatting off with `formatAsYouType={false}`.
+- `PhoneField` keeps "+" and every digit group in typed order inside RTL pages, and aligns to the page's start edge. `dir="ltr"` alone isn't enough here. Arabic-Indic digits are *Arabic Number* characters in the Unicode Bidi Algorithm, so the spaces between groups resolve right-to-left and "٠٥٥٤ ١٧٥ ٩٩" displays as "٩٩ ١٧٥ ٠٥٥٤". The field overrides the bidi algorithm (`phoneInputStyle`) to prevent that. It reports `{ e164, valid }`.
 
 ### Helpers
 
@@ -110,13 +123,23 @@ The screenshots use [Thmanyah Sans](https://thmanyah.com). Its license doesn't a
 
 ## Tests
 
-`npm test` runs 65 tests in Vitest with Testing Library:
+`npm test` runs 96 tests in Vitest with Testing Library:
 
-- keyboard behaviour in both directions, including RTL detected from an ancestor's `dir`
+- keyboard behaviour in both directions, including RTL detected from an ancestor's `dir` or set after mount
 - ARIA state: `aria-expanded`, `aria-activedescendant`, `aria-selected` and `aria-disabled`
 - daylight-saving edge cases in London and New York, and Hijri month boundaries
-- number and phone parsing across digit systems
+- number and phone parsing across digit systems, currency and percent formats, and caret position while formatting
 - an [axe-core](https://github.com/dequelabs/axe-core) accessibility scan on every component, both closed and open
+- **screen-reader announcements in Arabic**, using Guidepup's [Virtual Screen Reader](https://github.com/guidepup/virtual-screen-reader). For example:
+
+| Action | Announcement |
+| --- | --- |
+| Focus today in the Hijri calendar | gridcell, الأربعاء، ٨ جمادى الآخرة ١٤٤٨ هـ, current date, not selected |
+| Press ← (next day in RTL) | gridcell, الخميس، ٩ جمادى الآخرة ١٤٤٨ هـ, not selected |
+| Press ← on the budget slider | ٢٬٠٠٠ US$ |
+| Focus a time slot shown in Dubai time | gridcell, ١٠:٠٠ ص, selected |
+
+The virtual screen reader follows the accessibility tree the way NVDA or VoiceOver would, so wrong roles, names, states and values fail in CI. It is not a substitute for testing with a real screen reader, which is next on the list.
 
 CI runs the type-check, tests, package build and demo build on every push. The demo deploys to GitHub Pages.
 

@@ -58,9 +58,34 @@ describe("NumberField", () => {
     expect(screen.getByLabelText("Age")).toHaveValue("99");
   });
 
+  it("ignores characters that can never form a number", async () => {
+    render(<NumberField label="Age" />);
+    await userEvent.type(screen.getByLabelText("Age"), "4a2b");
+    expect(screen.getByLabelText("Age")).toHaveValue("42");
+  });
+
+  it("round-trips a currency format and stays editable", async () => {
+    const onValueChange = vi.fn();
+    render(<NumberField label="Budget" locale="en-US" formatOptions={{ style: "currency", currency: "USD", maximumFractionDigits: 0 }} onValueChange={onValueChange} />);
+    const input = screen.getByLabelText("Budget");
+    await userEvent.type(input, "1500");
+    await userEvent.tab();
+    expect(input).toHaveValue("$1500");
+    await userEvent.type(input, "0");
+    expect(onValueChange).toHaveBeenLastCalledWith(15000);
+    expect(input).not.toHaveAttribute("aria-invalid");
+  });
+
+  it("parses Arabic currency and percent formats", () => {
+    const sar = { style: "currency", currency: "SAR" } as const;
+    const formatted = new Intl.NumberFormat("ar-SA", sar).format(2500);
+    expect(parseLocalizedNumber(formatted, { locale: "ar-SA", formatOptions: sar })).toBe(2500);
+    expect(parseLocalizedNumber("٪٥٠", { locale: "ar-EG", formatOptions: { style: "percent" } })).toBe(0.5);
+  });
+
   it("announces an error for text that is not a number", async () => {
     render(<NumberField label="Age" invalidMessage="Numbers only" />);
-    await userEvent.type(screen.getByLabelText("Age"), "abc");
+    await userEvent.type(screen.getByLabelText("Age"), "1.2.3");
     await userEvent.tab();
     expect(screen.getByRole("alert")).toHaveTextContent("Numbers only");
     expect(screen.getByLabelText("Age")).toHaveAttribute("aria-invalid", "true");
@@ -81,7 +106,7 @@ describe("PhoneField", () => {
     expect(input.style.unicodeBidi).toBe("bidi-override");
     expect(input.style.textAlign).toBe("right");
     await userEvent.type(input, "٠٥٠١٢٣٤٥٦٧");
-    expect(onPhoneChange).toHaveBeenLastCalledWith({ e164: "+966501234567", valid: true, raw: "٠٥٠١٢٣٤٥٦٧" });
+    expect(onPhoneChange).toHaveBeenLastCalledWith({ e164: "+966501234567", valid: true, raw: "٠٥٠ ١٢٣ ٤٥٦٧" });
   });
 
   it("aligns left on an LTR page", () => {

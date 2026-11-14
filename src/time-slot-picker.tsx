@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useDirection, type Direction } from "./direction";
+import { getMessages, resolveLocale } from "./messages";
 import { formatSlot, generateSlots, type Slot, type SlotOptions } from "./time";
 
 export interface UseSlotGridOptions {
@@ -113,7 +114,7 @@ export function TimeSlotPicker({
   onChange,
   isSlotDisabled,
   dir,
-  emptyMessage = "No times available",
+  emptyMessage,
   className,
   ...slotOptions
 }: TimeSlotPickerProps) {
@@ -134,13 +135,13 @@ export function TimeSlotPicker({
     onActivate: (i) => onChange?.(slots[i]),
   });
 
-  const fmtLocale = locale ?? (typeof navigator !== "undefined" ? navigator.language : "en");
+  const fmtLocale = resolveLocale(locale);
   const shownZone = displayTimeZone ?? timeZone;
 
   return (
     <div ref={rootRef} className={className} data-rtlp-time-slot-picker="" dir={dir}>
       {slots.length === 0 ? (
-        <p role="status">{emptyMessage}</p>
+        <p role="status">{emptyMessage ?? getMessages(fmtLocale).noTimes}</p>
       ) : (
         <div role="grid" aria-label={label}>
           {grid.rows.map((row, r) => (

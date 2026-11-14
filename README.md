@@ -62,6 +62,8 @@ import { Combobox, TimeSlotPicker } from "rtl-primitives";
 
 The components ship no CSS. Style them through their roles and `data-*` attributes: `[data-active]` on the highlighted option, and `[data-selected]` and `[data-disabled]` on time slots. See [`demo/styles.css`](demo/styles.css) for a complete example.
 
+The screenshots use [Thmanyah Sans](https://thmanyah.com). Its license doesn't allow redistributing the font files, so they aren't in this repo: the demo uses Thmanyah Sans if you have it installed and falls back to IBM Plex Sans Arabic.
+
 ## Tests
 
 `npm test` runs 31 tests in Vitest with Testing Library:

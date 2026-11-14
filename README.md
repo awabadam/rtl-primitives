@@ -64,11 +64,11 @@ A grid of bookable times for a business in one time zone and a visitor in anothe
 
 - Both accept Western, Arabic-Indic (٠-٩) and Persian (۰-۹) digits, plus the Arabic decimal (٫) and thousands (٬) separators.
 - `NumberField` shows the value in the viewer's locale on blur, clamps it to `minValue`/`maxValue`, and announces invalid input.
-- `PhoneField` stays `dir="ltr"` inside RTL pages so "+" and the digits keep their order. It reports `{ e164, valid }` and adds `countryCode` to local numbers.
+- `PhoneField` keeps "+" and every digit group in typed order inside RTL pages, and aligns to the page's start edge. `dir="ltr"` alone isn't enough here. Arabic-Indic digits are *Arabic Number* characters in the Unicode Bidi Algorithm, so the spaces between groups resolve right-to-left and "٠٥٥٤ ١٧٥ ٩٩" displays as "٩٩ ١٧٥ ٠٥٥٤". The field overrides the bidi algorithm (`phoneInputStyle`) to prevent that. It reports `{ e164, valid }` and adds `countryCode` to local numbers.
 
 ### Helpers
 
-`normalizeForSearch`, `matchesSearch`, `parseLocalizedNumber`, `normalizePhone`, `generateSlots`, `zonedTimeToInstant`, `formatSlot`, `monthOf`, `firstDayOfWeek`, `getDirection` and `useDirection` are exported for use on their own.
+`normalizeForSearch`, `matchesSearch`, `parseLocalizedNumber`, `normalizePhone`, `generateSlots`, `zonedTimeToInstant`, `formatSlot`, `monthOf`, `firstDayOfWeek`, `getDirection`, `useDirection` (which follows `dir` changes made after mount, such as a language switch) and `phoneInputStyle` are exported for use on their own.
 
 ## Usage
 

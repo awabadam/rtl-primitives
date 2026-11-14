@@ -39,7 +39,13 @@ button, input, select { font: inherit; color: inherit; }
 .cbx [role="status"] { color: var(--muted); font-size: 0.9rem; }
 
 .zone { display: inline-flex; gap: 0.5rem; align-items: center; margin-block-end: 1rem; }
-.zone select { border: 1px solid var(--line); border-radius: 0.5rem; padding: 0.35rem 0.5rem; background: transparent; }
+/* Native select arrows ignore direction in some browsers and sit flush against the border.
+   Draw our own chevron on the logical end side and reserve room for it with padding-inline-end.
+   The chevron itself points down in both directions, so its borders stay physical. */
+.select { position: relative; display: inline-flex; }
+.select select { appearance: none; -webkit-appearance: none; border: 1px solid var(--line); border-radius: 0.5rem; padding-block: 0.4rem; padding-inline: 0.75rem 2.25rem; background: transparent; cursor: pointer; }
+.select::after { content: ""; position: absolute; inset-inline-end: 0.85rem; inset-block-start: 50%; inline-size: 0.45rem; block-size: 0.45rem; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+.select select:hover { border-color: var(--ink); }
 
 .slots [role="grid"] { display: grid; gap: 0.5rem; }
 .slots [role="row"] { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.5rem; }

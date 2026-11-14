@@ -77,8 +77,16 @@ describe("PhoneField", () => {
     );
     const input = screen.getByLabelText("رقم الجوال");
     expect(input).toHaveAttribute("dir", "ltr");
+    // Arabic-Indic digit groups would otherwise reorder; the value is aligned to the RTL start edge.
+    expect(input.style.unicodeBidi).toBe("bidi-override");
+    expect(input.style.textAlign).toBe("right");
     await userEvent.type(input, "٠٥٠١٢٣٤٥٦٧");
     expect(onPhoneChange).toHaveBeenLastCalledWith({ e164: "+966501234567", valid: true, raw: "٠٥٠١٢٣٤٥٦٧" });
+  });
+
+  it("aligns left on an LTR page", () => {
+    render(<PhoneField label="Phone" />);
+    expect(screen.getByLabelText("Phone").style.textAlign).toBe("left");
   });
 
   it("has no axe violations, including the error state", async () => {

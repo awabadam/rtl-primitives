@@ -168,13 +168,15 @@ function App() {
         <p>{s.step3Body}</p>
         <label className="zone">
           {s.zone}{" "}
-          <select value={zone} onChange={(e) => setZone(e.target.value)}>
-            {zones.map((z) => (
-              <option key={z} value={z}>
-                {z.replace("_", " ")}
-              </option>
-            ))}
-          </select>
+          <span className="select">
+            <select value={zone} onChange={(e) => setZone(e.target.value)}>
+              {zones.map((z) => (
+                <option key={z} value={z}>
+                  {z.replace("_", " ")}
+                </option>
+              ))}
+            </select>
+          </span>
         </label>
         <TimeSlotPicker
           className="slots"

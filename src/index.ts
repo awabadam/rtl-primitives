@@ -5,5 +5,5 @@ export { generateSlots, formatSlot, zonedTimeToInstant, zoneOffsetMinutes, wallC
 export { useSlotGrid, TimeSlotPicker, type UseSlotGridOptions, type TimeSlotPickerProps } from "./time-slot-picker";
 export { useTabs, Tabs, type UseTabsOptions, type TabsProps } from "./tabs";
 export { useSlider, Slider, type UseSliderOptions, type SliderProps } from "./slider";
-export { parseLocalizedNumber, normalizePhone, NumberField, PhoneField, type NumberFieldProps, type PhoneFieldProps } from "./fields";
+export { parseLocalizedNumber, normalizePhone, phoneInputStyle, NumberField, PhoneField, type NumberFieldProps, type PhoneFieldProps } from "./fields";
 export { useCalendar, Calendar, monthOf, firstDayOfWeek, addDays, type ISODate, type UseCalendarOptions, type CalendarProps } from "./calendar";

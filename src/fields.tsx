@@ -1,4 +1,5 @@
-import { useId, useState, type InputHTMLAttributes, type ReactNode } from "react";
+import { useId, useRef, useState, type CSSProperties, type InputHTMLAttributes, type ReactNode } from "react";
+import { useDirection, type Direction } from "./direction";
 
 const toWesternDigits = (s: string) =>
   s.replace(/[٠-٩۰-۹]/g, (d) => {
@@ -100,6 +101,8 @@ export function NumberField({ label, hint, error, className, value, defaultValue
 }
 
 export interface PhoneFieldProps extends FieldBase, Omit<InputHTMLAttributes<HTMLInputElement>, "onChange" | "type" | "dir"> {
+  /** Page direction. Detected from the nearest `dir` when omitted; it only decides which side the number is aligned to. */
+  dir?: Direction;
   /** Used when the number has no + or 00 prefix, e.g. "+90". */
   countryCode?: string;
   onPhoneChange?: (phone: { e164: string; valid: boolean; raw: string }) => void;
@@ -107,21 +110,34 @@ export interface PhoneFieldProps extends FieldBase, Omit<InputHTMLAttributes<HTM
 }
 
 /**
- * A phone input that stays left-to-right inside RTL pages (so "+" and the digits keep their order),
+ * Styles that keep a phone number in typed order. `dir="ltr"` alone is not enough: Arabic-Indic digits
+ * are "Arabic Number" characters in the Unicode Bidi Algorithm, so spaces between digit groups resolve
+ * right-to-left and "٠٥٥٤ ١٧٥ ٩٩" displays as "٩٩ ١٧٥ ٠٥٥٤". Overriding the bidi algorithm for the
+ * field keeps every character in the order it was typed. The value is aligned to the page's start edge.
+ */
+export function phoneInputStyle(pageDir: Direction): CSSProperties {
+  return { direction: "ltr", unicodeBidi: "bidi-override", textAlign: pageDir === "rtl" ? "right" : "left" };
+}
+
+/**
+ * A phone input that keeps "+" and every digit group in typed order inside RTL pages,
  * accepts Arabic-Indic and Persian digits, and reports the number in E.164.
  */
-export function PhoneField({ label, hint, error, className, countryCode = "", onPhoneChange, invalidMessage = "Enter a full phone number", ...rest }: PhoneFieldProps) {
+export function PhoneField({ label, hint, error, className, countryCode = "", onPhoneChange, invalidMessage = "Enter a full phone number", dir, ...rest }: PhoneFieldProps) {
   const id = useId().replace(/:/g, "");
+  const root = useRef<HTMLDivElement>(null);
+  const pageDir = useDirection(root, dir);
   const [raw, setRaw] = useState(String(rest.defaultValue ?? ""));
   const [touched, setTouched] = useState(false);
   const phone = normalizePhone(raw, countryCode);
   const message = error ?? (touched && raw.trim() !== "" && !phone.valid ? invalidMessage : null);
 
   return (
-    <div className={className} data-rtlp-field="">
+    <div ref={root} className={className} data-rtlp-field="">
       <label htmlFor={`${id}-input`}>{label}</label>
       <input
         {...rest}
+        style={{ ...phoneInputStyle(pageDir), ...rest.style }}
         defaultValue={undefined}
         id={`${id}-input`}
         type="tel"

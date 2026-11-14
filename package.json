@@ -1,0 +1,63 @@
+{
+  "name": "rtl-primitives",
+  "version": "0.1.0",
+  "description": "Accessible, unstyled React primitives that work in Arabic and right-to-left layouts: an Arabic-aware combobox and a time-zone-correct time-slot picker.",
+  "license": "MIT",
+  "author": "Awab Elkhalil (https://www.awab.design)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/awabadam/rtl-primitives.git"
+  },
+  "keywords": [
+    "react",
+    "rtl",
+    "arabic",
+    "accessibility",
+    "a11y",
+    "combobox",
+    "headless",
+    "intl",
+    "timezone"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean --external react",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "demo:dev": "vite demo",
+    "demo:build": "vite build demo"
+  },
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.10",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "axe-core": "^4.14.0",
+    "jsdom": "^31.0.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tsup": "^9.0.0",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  }
+}

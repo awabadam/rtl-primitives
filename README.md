@@ -10,7 +10,11 @@ Accessible, unstyled React components that work in Arabic and right-to-left layo
 
 The demo page is one booking flow (treatment, date, time, budget, contact) built entirely from these components.
 
-Most component libraries are built in English and adapted for RTL afterwards. These are built for both from the start. I wrote them after shipping a 9-language patient site with RTL Arabic and Farsi, where the same problems kept coming back.
+Most component libraries are built in English and adapted for RTL afterwards. These are built for both from the start.
+
+## How this was built
+
+I kept hitting the same Arabic bugs on the forms of a 9-language patient site I built in Istanbul. Claude Code suggested turning the fixes into a library and wrote the code. I set the direction and scope, tested the components in Arabic, and reviewed the result. The 96 tests and axe checks run on every push. That's why the early commits are authored by Claude.
 
 ## Why this exists, and when to use React Aria instead
 
